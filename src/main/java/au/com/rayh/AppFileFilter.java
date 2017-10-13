@@ -39,6 +39,7 @@ import java.io.Serializable;
  */
 public class AppFileFilter implements FileFilter,Serializable {
     public boolean accept(File pathname) {
-        return pathname.isDirectory() && pathname.getName().endsWith(".app");
+        return pathname.isDirectory() && !pathname.getName().contains("Tests")
+                && (pathname.getName().endsWith(".app") || pathname.getName().endsWith(".appex"));
     }
 }
