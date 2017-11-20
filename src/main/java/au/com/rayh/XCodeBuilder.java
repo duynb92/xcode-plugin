@@ -725,6 +725,7 @@ public class XCodeBuilder extends Builder implements SimpleBuildStep {
 			    // Placeholder replacement.
 			    // Currentry only support "$(PRODUCT_NAME:rfc1034identifier)"
 			    bundleIdentifier = infoPlist.getCfBundleIdentifier();
+			    bundleIdentifier = bundleIdentifier.replaceAll(" ", "-");
 			    bundleIdentifier = bundleIdentifier.replaceAll(Pattern.quote("$(PRODUCT_NAME:rfc1034identifier)"), productName);
 			}
 			// PROVISIONING_PROFILE(UUID) or PROVISIONING_PROFILE_SPECIFIER
