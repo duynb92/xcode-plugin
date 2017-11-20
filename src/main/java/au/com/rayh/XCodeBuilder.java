@@ -694,14 +694,26 @@ public class XCodeBuilder extends Builder implements SimpleBuildStep {
 		// Examine all targets.
 		for ( String key : xcodeProject.projectTarget.keySet() ) {
 		    ProjectTarget projectTarget = xcodeProject.projectTarget.get(key);
-		    if ( StringUtils.isEmpty(configuration) ) {
-			configuration = projectTarget.defaultConfigurationName;
+		    String exportConfiguration = null;
+		    if ( !StringUtils.isEmpty(ipaExportMethod) ) {
+			if ( ipaExportMethod.equals("app-store") ) {
+			    exportConfiguration = "Release";
+			}
+			else if ( ipaExportMethod.equals("ad-hoc") ) {
+			    exportConfiguration = "AdHoc";
+			}
+			else {
+			    exportConfiguration = "Development";
+			}
+                    }
+		    else if ( StringUtils.isEmpty(configuration) ) {
+			exportConfiguration = projectTarget.defaultConfigurationName;
 		    }
 		    Boolean automaticSigning = projectTarget.provisioningStyle.equals("Automatic");
 		    if ( !automaticSigning ) {
-			BuildConfiguration buildConfiguration = projectTarget.buildConfiguration.get(configuration);
+			BuildConfiguration buildConfiguration = projectTarget.buildConfiguration.get(exportConfiguration);
 			if ( buildConfiguration == null ) {
-			    listener.getLogger().println("Could not get build configuration (" + configuration + ") from " + projectLocation);
+			    listener.getLogger().println("Could not get export configuration (" + buildConfiguration + ") from " + projectLocation);
 			    return false;
 			}
 			developmentTeamID = buildConfiguration.developmentTeamId;
@@ -725,7 +737,7 @@ public class XCodeBuilder extends Builder implements SimpleBuildStep {
 			    // Placeholder replacement.
 			    // Currentry only support "$(PRODUCT_NAME:rfc1034identifier)"
 			    bundleIdentifier = infoPlist.getCfBundleIdentifier();
-			    bundleIdentifier = bundleIdentifier.replaceAll(" ", "-");
+			    productName = productName.replaceAll(" ", "-");
 			    bundleIdentifier = bundleIdentifier.replaceAll(Pattern.quote("$(PRODUCT_NAME:rfc1034identifier)"), productName);
 			}
 			// PROVISIONING_PROFILE(UUID) or PROVISIONING_PROFILE_SPECIFIER
