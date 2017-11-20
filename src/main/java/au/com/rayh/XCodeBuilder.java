@@ -61,6 +61,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.UUID;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
@@ -712,9 +713,10 @@ public class XCodeBuilder extends Builder implements SimpleBuildStep {
 			}
 			else {
 			    // Placeholder replacement.
-			    // Currentry only support "${TARGET_NAME}"
+			    // Currentry only support "${TARGET_NAME}" and "$(TARGET_NAME)"
 			    String productName = buildConfiguration.productName;
-			    productName = productName.replaceAll("\\$\\{TARGET_NAME\\}", target);
+			    productName = productName.replaceAll(Pattern.quote("${TARGET_NAME}"), key);
+			    productName = productName.replaceAll(Pattern.quote("$(TARGET_NAME)"), key);
 			    InfoPlist infoPlist = XcodeProjectParser.parseInfoPlist(projectRoot.toString() + "/" + buildConfiguration.infoPlistFile);
 			    if ( infoPlist == null ) {
 				listener.getLogger().println("Could not read information from " + projectRoot.toString() + "/" + buildConfiguration.infoPlistFile);
@@ -723,7 +725,7 @@ public class XCodeBuilder extends Builder implements SimpleBuildStep {
 			    // Placeholder replacement.
 			    // Currentry only support "$(PRODUCT_NAME:rfc1034identifier)"
 			    bundleIdentifier = infoPlist.getCfBundleIdentifier();
-			    bundleIdentifier = bundleIdentifier.replaceAll("\\$\\(PRODUCT_NAME:rfc1034identifier\\)", productName);
+			    bundleIdentifier = bundleIdentifier.replaceAll(Pattern.quote("$(PRODUCT_NAME:rfc1034identifier)"), productName);
 			}
 			// PROVISIONING_PROFILE(UUID) or PROVISIONING_PROFILE_SPECIFIER
 			String provisioningProfileIdentifier = null;
