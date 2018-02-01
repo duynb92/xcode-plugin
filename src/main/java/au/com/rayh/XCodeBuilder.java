@@ -645,10 +645,10 @@ public class XCodeBuilder extends Builder implements SimpleBuildStep {
 		}
 	    }
             // Retrieve provisioning profile information from specific Xcode project file.
+	    listener.getLogger().println("Read information from scheme " + xcodeSchema);
+            HashMap<String, ProjectScheme> xcodeSchemes = XcodeProjectParser.listXcodeSchemes(projectLocation);
             if ( !StringUtils.isEmpty(xcodeSchema) ) {
-                // Retrieve target from Xcode scheme.
-		listener.getLogger().println("Read information from scheme " + xcodeSchema);
-                HashMap<String, ProjectScheme> xcodeSchemes = XcodeProjectParser.listXcodeSchemes(projectLocation);
+                // Retrieve target from specific Xcode scheme.
                 ProjectScheme projectScheme = xcodeSchemes.get(xcodeSchema);
                 if ( projectScheme == null ) {
 		    listener.getLogger().println("Could not get information from scheme " + xcodeSchema);
@@ -659,30 +659,38 @@ public class XCodeBuilder extends Builder implements SimpleBuildStep {
 		listener.getLogger().println("Read project information from " + projectLocation);
 		projectLocations.add(projectLocation);
             }
-            else if ( !StringUtils.isEmpty(xcodeWorkspaceFile) ) {
-                // Retrieve target from Xcode workspace.
-		listener.getLogger().println("Read information from workspace " + xcodeWorkspaceFile);
-                List<String> projectList = XcodeProjectParser.parseXcodeWorkspace(projectRoot.toString() + "/" + xcodeWorkspaceFile + ".xcworkspace");
-                for ( String location : projectList ) {
-                    String projectName = XcodeProjectParser.basename(location).replaceAll(".xcodeproj$", "");
-                    xcodeProject = XcodeProjectParser.parseXcodeProject(projectRoot.toString() + "/" + location);
-                    if ( !StringUtils.isEmpty(target) ) {
-			if ( target.equals(projectName) ) {
-			    // Add the location of specific projects.
-			    projectLocations.add(projectRoot.toString() + "/" + location);
-			    break;
-			}
-                    }
-		    else {
-			// Add the location of all projects.
-			projectLocations.add(projectRoot.toString() + "/" + location);
+            else {
+		if ( xcodeSchemes.size() == 1 ) {
+		    for ( String key : xcodeSchemes.keySet() ) {
+			ProjectScheme projectScheme = xcodeSchemes.get(key);
+		    	xcodeSchema = projectScheme.blueprintName;
 		    }
+		}
+		if ( !StringUtils.isEmpty(xcodeWorkspaceFile) ) {
+                    // Retrieve target from Xcode workspace.
+		    listener.getLogger().println("Read information from workspace " + xcodeWorkspaceFile);
+                    List<String> projectList = XcodeProjectParser.parseXcodeWorkspace(projectRoot.toString() + "/" + xcodeWorkspaceFile + ".xcworkspace");
+                    for ( String location : projectList ) {
+                	String projectName = XcodeProjectParser.basename(location).replaceAll(".xcodeproj$", "");
+                	xcodeProject = XcodeProjectParser.parseXcodeProject(projectRoot.toString() + "/" + location);
+                	if ( !StringUtils.isEmpty(target) ) {
+			    if ( target.equals(projectName) ) {
+				// Add the location of specific projects.
+				projectLocations.add(projectRoot.toString() + "/" + location);
+				break;
+			    }
+               		}
+		        else {
+			    // Add the location of all projects.
+			    projectLocations.add(projectRoot.toString() + "/" + location);
+			}
+            	    }
                 }
-            }
-	    else {
-		// Using Xcode project file information.
-		listener.getLogger().println("Using Xcode project file information " + xcodeSchema);
-		projectLocations.add(projectLocation);
+	        else {
+		    // Using Xcode project file information.
+		    listener.getLogger().println("Using Xcode project file information " + xcodeSchema);
+		    projectLocations.add(projectLocation);
+		}
 	    }
 	    for ( String examineLocation : projectLocations ) {
                 // Parse Xcode project file.
@@ -761,7 +769,7 @@ public class XCodeBuilder extends Builder implements SimpleBuildStep {
 	    }
         }
         else {
-	    developmentTeamID = this.developmentTeamID;
+	    developmentTeamID = envs.expand(this.developmentTeamID);
 	    if (StringUtils.isEmpty(developmentTeamID)) {
 	        Team team = getDevelopmentTeam();
                 if (team == null) {
