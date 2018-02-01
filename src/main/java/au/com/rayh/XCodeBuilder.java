@@ -608,7 +608,7 @@ public class XCodeBuilder extends Builder implements SimpleBuildStep {
         listener.getLogger().println(Messages.XCodeBuilder_DebugInfoAvailablePProfiles());
         /*returnCode =*/ launcher.launch().envs(envs).cmds("/usr/bin/security", "find-identity", "-p", "codesigning", "-v").stdout(listener).pwd(projectRoot).join();
 
-	String developmentTeamID = this.developmentTeamID;
+	String developmentTeamID = envs.expand(this.developmentTeamID);
 	if (StringUtils.isEmpty(developmentTeamID)) {
 	    Team team = getDevelopmentTeam();
             if (team == null) {
