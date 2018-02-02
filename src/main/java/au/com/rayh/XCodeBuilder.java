@@ -616,8 +616,8 @@ public class XCodeBuilder extends Builder implements SimpleBuildStep {
         /*returnCode =*/ launcher.launch().envs(envs).cmds("/usr/bin/security", "find-identity", "-p", "codesigning", "-v").stdout(listener).pwd(projectRoot).join();
 
 	String developmentTeamID = null;
-	provisioningProfiles = new ArrayList<>(); 
         if ( signingMethod != null && signingMethod.equals("readFromProject") ) {
+	    provisioningProfiles = new ArrayList<>();
 	    listener.getLogger().println("Read signing information from Xcode Project.");
 	    XcodeProject xcodeProject = null;
 	    ArrayList<String> projectLocations = new ArrayList<String>();
